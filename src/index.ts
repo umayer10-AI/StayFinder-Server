@@ -2,7 +2,7 @@ require('dotenv').config()
 const express = require('express');
 const cors = require('cors')
 const app = express()
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
 
 app.use(cors())
@@ -33,6 +33,28 @@ const run = async() => {
     app.post('/api/hotels', async (req,res) => {
       const newData = req.body
       const result = await hotelCollections.insertOne(newData)
+      res.json(result)
+    })
+
+    app.get('/api/hotels/:id', async (req,res) => {
+      const {id} = req.params
+      const result = await hotelCollections.find({userId: id}).toArray()
+      res.json(result)
+    })
+
+    app.patch('/api/hotels/edit/:id', async (req,res) => {
+      const {id} = req.params
+      const m = req.body
+      const updateDocument = {
+        $set: m
+      }
+      const result = await hotelCollections.updateOne({_id: new ObjectId(id)}, updateDocument)
+      res.json(result)
+    })
+
+    app.delete('/api/hotels/delete/:id', async (req,res) => {
+      const {id} = req.params
+      const result = await hotelCollections.deleteOne({_id: new ObjectId(id)})
       res.json(result)
     })
 
