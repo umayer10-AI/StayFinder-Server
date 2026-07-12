@@ -27,6 +27,7 @@ const run = async() => {
     const subscriptionCollections = db.collection('subscription')
     const paymentCollections = db.collection('payment')
     const userCollections = db.collection('user')
+    const bookingCollections = db.collection('booking')
 
     app.get('/api/hotels', async (req,res) => {
       const result = await hotelCollections.find().toArray()
@@ -111,8 +112,29 @@ const run = async() => {
           paidAt: new Date(),
         })
 
+        const findData = await hotelCollections.findOne({_id: new ObjectId(hotelId)})
+        await bookingCollections.insertOne(findData)
+
         res.json({message: 'Payment Successfull'})
 
+    })
+
+    app.get('/api/hotels/customer/transiction/:id', async (req,res) => {
+      const {id} = req.params
+      const result = await paymentCollections.find({userId: id}).toArray()
+      res.json(result)
+    })
+
+    app.get('/api/hotels/customer/transiction/booking/:id', async (req,res) => {
+      const {id} = req.params
+      const result = await bookingCollections.find({userId: id}).toArray()
+      res.json(result)
+    })
+
+    app.delete('/api/hotels/customer/transiction/booking/delete/:id', async (req,res) => {
+      const {id} = req.params
+      const result = await bookingCollections.deleteOne({_id: new ObjectId(id)})
+      res.json(result)
     })
 
     await client.db("admin").command({ ping: 1 });
