@@ -25,6 +25,7 @@ const run = async() => {
     const db = client.db('StayFinder')
     const hotelCollections = db.collection('hotels')
     const subscriptionCollections = db.collection('subscription')
+    const paymentCollections = db.collection('payment')
     const userCollections = db.collection('user')
 
     app.get('/api/hotels', async (req,res) => {
@@ -86,6 +87,29 @@ const run = async() => {
           {_id: new ObjectId(userId)},
           { $set: { plan: 'pro'}}
         )
+
+        res.json({message: 'Payment Successfull'})
+
+    })
+
+    app.post('/api/payment', async (req,res) => {
+
+      const {session_id, price, userId, userEmail, hotelName, hotelId} = req.body
+
+      const isExist = await subscriptionCollections.findOne({session_id})
+        if(isExist){
+          return res.json({message: 'Aready Exist'})
+        }
+
+      await paymentCollections.insertOne({
+          session_id,
+          price,
+          userId,
+          userEmail,
+          hotelName,
+          hotelId,
+          paidAt: new Date(),
+        })
 
         res.json({message: 'Payment Successfull'})
 
