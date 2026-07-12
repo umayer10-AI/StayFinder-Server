@@ -32,6 +32,12 @@ const run = async() => {
       res.json(result)
     })
 
+    app.get('/api/hotels/single/:id', async (req,res) => {
+      const {id} = req.params
+      const result = await hotelCollections.findOne({_id: new ObjectId(id)})
+      res.json(result)
+    })
+
     app.post('/api/hotels', async (req,res) => {
       const newData = req.body
       const result = await hotelCollections.insertOne(newData)
