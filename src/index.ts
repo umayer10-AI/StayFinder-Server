@@ -97,7 +97,7 @@ const run = async() => {
 
       const {session_id, price, userId, userEmail, hotelName, hotelId} = req.body
 
-      const isExist = await subscriptionCollections.findOne({session_id})
+      const isExist = await paymentCollections.findOne({session_id})
         if(isExist){
           return res.json({message: 'Aready Exist'})
         }
@@ -113,7 +113,13 @@ const run = async() => {
         })
 
         const findData = await hotelCollections.findOne({_id: new ObjectId(hotelId)})
-        await bookingCollections.insertOne(findData)
+
+        delete findData._id;
+
+        await bookingCollections.insertOne({
+          ...findData,
+          bookingAt: new Date(),
+        });
 
         res.json({message: 'Payment Successfull'})
 
