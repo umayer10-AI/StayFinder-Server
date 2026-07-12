@@ -190,6 +190,11 @@ const run = async() => {
         res.json(result)
       })
 
+      app.get('/api/admin/block', async(req,res) => {
+        const result = await userCollections.find({isBlock: true}).toArray()
+        res.json(result)
+      })
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
