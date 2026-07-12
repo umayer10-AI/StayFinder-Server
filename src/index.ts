@@ -24,6 +24,8 @@ const run = async() => {
 
     const db = client.db('StayFinder')
     const hotelCollections = db.collection('hotels')
+    const subscriptionCollections = db.collection('subscription')
+    const userCollections = db.collection('user')
 
     app.get('/api/hotels', async (req,res) => {
       const result = await hotelCollections.find().toArray()
@@ -56,6 +58,31 @@ const run = async() => {
       const {id} = req.params
       const result = await hotelCollections.deleteOne({_id: new ObjectId(id)})
       res.json(result)
+    })
+
+    app.post('/api/subscription', async (req,res) => {
+
+      const {session_id, priceId, userId, userEmail} = req.body
+
+      const isExist = await subscriptionCollections.findOne({session_id})
+        if(isExist){
+          return res.json({message: 'Aready Exist'})
+        }
+
+      await subscriptionCollections.insertOne({
+          session_id,
+          priceId,
+          userId,
+          userEmail,
+        })
+
+        await userCollections.updateOne(
+          {_id: new ObjectId(userId)},
+          { $set: { plan: 'pro'}}
+        )
+
+        res.json({message: 'Payment Successfull'})
+
     })
 
     await client.db("admin").command({ ping: 1 });
