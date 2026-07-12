@@ -142,6 +142,55 @@ const run = async() => {
       res.json(result)
     })
 
+    app.get('/api/hotels/admin/booking', async (req,res) => {
+      const result = await bookingCollections.find().toArray()
+      res.json(result)
+    })
+
+    app.get('/api/users', async (req,res) => {
+      const result = await userCollections.find().toArray()
+      res.json(result)
+    })
+
+
+
+
+    app.patch("/api/users/block/:id", async (req, res) => {
+        const { id } = req.params;
+
+        const user = await userCollections.findOne({
+          _id: new ObjectId(id),
+        });
+
+        if (!user) {
+          return res.status(404).json({
+            message: "User not found",
+          });
+        }
+
+        const result = await userCollections.updateOne(
+          { _id: new ObjectId(id) },
+          {
+            $set: {
+              isBlock: !user.isBlock,
+            },
+          }
+        );
+
+        res.json(result);
+      });
+
+      app.get('/api/admin/hotels', async(req,res) => {
+        const result = await hotelCollections.find().toArray()
+        res.json(result)
+      })
+
+      app.get('/api/admin/hotels/plan', async(req,res) => {
+        const result = await userCollections.find({plan: 'pro'}).toArray()
+        res.json(result)
+      })
+
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } 
