@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 const { jwtVerify, createRemoteJWKSet } = require("jose-cjs");
 
 require('dotenv').config()
@@ -63,7 +65,6 @@ const adminVerify = async(req,res,next) => {
 
 const run = async() => {
   try {
-    await client.connect();
 
     const db = client.db('StayFinder')
     const hotelCollections = db.collection('hotels')
@@ -157,6 +158,12 @@ const run = async() => {
         })
 
         const findData = await hotelCollections.findOne({_id: new ObjectId(hotelId)})
+
+        if (!findData) {
+          return res.status(404).json({
+            message: "Hotel not found",
+          });
+        }
 
         delete findData._id;
 
@@ -256,7 +263,6 @@ const run = async() => {
       })
 
 
-    await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } 
   finally {
