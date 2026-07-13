@@ -52,6 +52,14 @@ const customerVerify = async(req,res,next) => {
   }
   next()
 }
+const adminVerify = async(req,res,next) => {
+  const user = req.user
+  console.log(user)
+  if(user.role !== 'admin'){
+    return res.status(403).json({message: 'Forbidden'})
+  }
+  next()
+}
 
 const run = async() => {
   try {
@@ -75,7 +83,7 @@ const run = async() => {
       res.json(result)
     })
 
-    app.post('/api/hotels', async (req,res) => {
+    app.post('/api/hotels',verify, customerVerify, async (req,res) => {
       const newData = req.body
       const result = await hotelCollections.insertOne(newData)
       res.json(result)
@@ -87,7 +95,7 @@ const run = async() => {
       res.json(result)
     })
 
-    app.patch('/api/hotels/edit/:id', async (req,res) => {
+    app.patch('/api/hotels/edit/:id', verify, async (req,res) => {
       const {id} = req.params
       const m = req.body
       const updateDocument = {
@@ -97,7 +105,7 @@ const run = async() => {
       res.json(result)
     })
 
-    app.delete('/api/hotels/delete/:id', async (req,res) => {
+    app.delete('/api/hotels/delete/:id', verify, async (req,res) => {
       const {id} = req.params
       const result = await hotelCollections.deleteOne({_id: new ObjectId(id)})
       res.json(result)
@@ -160,7 +168,7 @@ const run = async() => {
 
     })
 
-    app.get('/api/hotels/customer/transiction/:id', async (req,res) => {
+    app.get('/api/hotels/customer/transiction/:id', verify, customerVerify, async (req,res) => {
       const {id} = req.params
       const result = await paymentCollections.find({userId: id}).toArray()
       res.json(result)
@@ -172,13 +180,13 @@ const run = async() => {
       res.json(result)
     })
 
-    app.delete('/api/hotels/customer/transiction/booking/delete/:id', async (req,res) => {
+    app.delete('/api/hotels/customer/transiction/booking/delete/:id',verify,adminVerify, async (req,res) => {
       const {id} = req.params
       const result = await bookingCollections.deleteOne({_id: new ObjectId(id)})
       res.json(result)
     })
 
-    app.get('/api/hotels/transiction/colection', async (req,res) => {
+    app.get('/api/hotels/transiction/colection',verify, adminVerify, async (req,res) => {
       const result = await paymentCollections.find().toArray()
       res.json(result)
     })
@@ -188,7 +196,7 @@ const run = async() => {
       res.json(result)
     })
 
-    app.get('/api/users', async (req,res) => {
+    app.get('/api/users', verify, adminVerify, async (req,res) => {
       const result = await userCollections.find().toArray()
       res.json(result)
     })
@@ -221,7 +229,7 @@ const run = async() => {
         res.json(result);
       });
 
-      app.get('/api/admin/hotels', async(req,res) => {
+      app.get('/api/admin/hotels', verify, adminVerify, async(req,res) => {
         const result = await hotelCollections.find().toArray()
         res.json(result)
       })
