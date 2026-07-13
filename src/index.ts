@@ -139,6 +139,7 @@ const run = async() => {
     app.post('/api/payment', async (req,res) => {
 
       const {session_id, price, userId, userEmail, hotelName, hotelId} = req.body
+      console.log({userId, userEmail})
 
       const isExist = await paymentCollections.findOne({session_id})
         if(isExist){
@@ -160,7 +161,16 @@ const run = async() => {
         delete findData._id;
 
         await bookingCollections.insertOne({
-          ...findData,
+          hotelName,
+          type: findData.type,
+          description: findData.description,
+          location: findData.location,
+          contact: findData.contact,
+          image: findData.image,
+          price: findData.price,
+          userId,
+          userEmail,
+          hotelId,
           bookingAt: new Date(),
         });
 
@@ -178,9 +188,10 @@ const run = async() => {
       const {id} = req.params
       const result = await bookingCollections.find({userId: id}).toArray()
       res.json(result)
+      // console.log(id)
     })
 
-    app.delete('/api/hotels/customer/transiction/booking/delete/:id',verify,adminVerify, async (req,res) => {
+    app.delete('/api/hotels/customer/transiction/booking/delete/:id',verify, async (req,res) => {
       const {id} = req.params
       const result = await bookingCollections.deleteOne({_id: new ObjectId(id)})
       res.json(result)
