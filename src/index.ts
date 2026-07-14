@@ -73,10 +73,56 @@ const run = async() => {
     const userCollections = db.collection('user')
     const bookingCollections = db.collection('booking')
 
-    app.get('/api/hotels', async (req,res) => {
-      const result = await hotelCollections.find().toArray()
-      res.json(result)
-    })
+
+    app.get("/api/hotels", async (req, res) => {
+      const {
+        search = "",
+        category = "",
+        page = 1,
+        limit = 8,
+      } = req.query;
+
+      const query = {};
+
+      if (search) {
+        query.$or = [
+          {
+            title: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+          {
+            location: {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        ];
+      }
+
+      if (category) {
+        query.type = category;
+      }
+
+      const currentPage = Number(page);
+      const perPage = Number(limit);
+
+      const total = await hotelCollections.countDocuments(query);
+
+      const hotels = await hotelCollections
+        .find(query)
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .toArray();
+
+      res.json({
+        hotels,
+        total,
+        totalPages: Math.ceil(total / perPage),
+        currentPage,
+      });
+    });
 
     app.get('/api/hotels/single/:id', async (req,res) => {
       const {id} = req.params
